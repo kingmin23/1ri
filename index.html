@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="ko">
   <head>
+    <link rel="icon" type="image/png" href="logo4 (2).png" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>일리 있어! (1ri-0) - 2-12</title>
@@ -333,36 +334,20 @@
         align-items: center;
       }
 
-      #dday-box {
-        text-align: right;
-      }
-
-      .dday-label {
-        font-size: 11px;
-        letter-spacing: 2px;
-        color: #888;
-      }
-
-      #dday-value {
-        font-size: 28px;
+      .dday-box {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4px 12px;
+        margin-left: 12px;
+        border: 1px solid #cecece;
+        font-size: 1rem;
         font-weight: 700;
-      }
-
-      #dday {
-        display: inline-block;
-
-        margin-left: 16px;
-        padding: 3px 12px;
-
-        border: 1px solid #ddd;
+        letter-spacing: 0.02em;
+        min-width: 78px;
+        height: 40px;
+        box-sizing: border-box;
         border-radius: 10px;
-
-        background: #fafafa;
-
-        font-size: 0.7em;
-        font-weight: 600;
-
-        letter-spacing: 1px;
       }
       .site-footer {
         margin-top: 60px;
@@ -371,12 +356,88 @@
         text-align: center;
 
         font-size: 12px;
-
         color: #888;
-
         border-top: 1px solid #eee;
-
         letter-spacing: 1px;
+      }
+      /*스티커 메모*/
+      #taskmemo-section {
+        margin-top: 20px;
+        padding: 16px;
+        border: 1px solid #111;
+        background: #ffffff;
+      }
+
+      #taskmemo-section h2 {
+        margin: 0 0 12px 0;
+        font-size: 1rem;
+      }
+
+      .memo-input-row {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+
+      #memo-input {
+        flex: 1;
+        padding: 8px 10px;
+        border: 1px solid #111;
+        font-size: 0.9rem;
+        background: white;
+      }
+
+      .memo-input-row button {
+        width: 34px;
+        border: 1px solid #111;
+        background: #111;
+        color: white;
+        cursor: pointer;
+      }
+
+      #memo-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .memo-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 8px 0;
+        border-bottom: 1px dashed #ffffff;
+        font-size: 0.9rem;
+      }
+
+      .memo-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+      }
+
+      .memo-left input[type="checkbox"] {
+        cursor: pointer;
+      }
+
+      .memo-text.done {
+        text-decoration: line-through;
+        color: #888;
+      }
+
+      .memo-delete {
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        font-size: 0.9rem;
+        color: #888;
+      }
+
+      /*체크 박스 색깔 조정*/
+      .memo-left input[type="checkbox"] {
+        accent-color: #111;
       }
     </style>
   </head>
@@ -386,9 +447,9 @@
         <h1>
           일리 있어!(1ri-0)
 
-          <span> 2-12 | 오늘의 공부를 기록하자! ₊˚⊹☆ | 一理 (1 2) </span>
+          <span> 2-12 | 공부를 기록하자! ₊˚⊹☆ | 一理 (1 2) |</span>
 
-          <span id="dday">시험까지 D-12</span>
+          <span class="dday-box" id="dday-box">D-000</span>
         </h1>
 
         <div id="live-clock">2026.06.18 00:00:00</div>
@@ -540,6 +601,20 @@
                 <li>QWER - 내 이름 맑음</li>
               </ul>
             </div>
+          </section>
+          <section id="taskmemo-section">
+            <h2>TASK MEMO</h2>
+
+            <div class="memo-input-row">
+              <input
+                type="text"
+                id="memo-input"
+                placeholder="할 일을 입력하세요"
+              />
+              <button onclick="addMemo()">+</button>
+            </div>
+
+            <ul id="memo-list"></ul>
           </section>
         </div>
       </div>
@@ -722,17 +797,33 @@
       }
 
       function initLunchHighlighter() {
-        document.querySelectorAll(".hl-tools").forEach((tool) => {
+        const mealKey = "mealHighlight_" + (window.currentMealCode || "2");
+        const saved = JSON.parse(localStorage.getItem(mealKey) || "{}");
+
+        document.querySelectorAll(".menu-item").forEach((item, idx) => {
+          const txt = item.querySelector(".menu-name");
+          const tool = item.querySelector(".hl-tools");
+
+          const savedColor = saved[idx];
+          if (savedColor) txt.classList.add(`bg-${savedColor}`);
+
           ["none", "yellow", "green", "pink"].forEach((c) => {
             const btn = document.createElement("span");
             btn.className = `hl-btn hl-${c}`;
-            btn.onclick = (e) => {
-              const txt = e.target
-                .closest(".menu-item")
-                .querySelector(".menu-name");
+
+            btn.onclick = () => {
               txt.classList.remove("bg-yellow", "bg-green", "bg-pink");
-              if (c !== "none") txt.classList.add(`bg-${c}`);
+
+              if (c === "none") {
+                delete saved[idx];
+              } else {
+                txt.classList.add(`bg-${c}`);
+                saved[idx] = c;
+              }
+
+              localStorage.setItem(mealKey, JSON.stringify(saved));
             };
+
             tool.appendChild(btn);
           });
         });
@@ -740,6 +831,7 @@
 
       async function loadMeal(mealCode) {
         try {
+          window.currentMealCode = mealCode;
           const today = new Date();
           const ymd =
             today.getFullYear().toString() +
@@ -783,7 +875,78 @@
           console.error(err);
         }
       }
+      const ddayTarget = {
+        title: "기말",
+        date: "2026-07-02",
+      };
 
+      function updateDday() {
+        const box = document.getElementById("dday-box");
+        if (!box) return;
+
+        const today = new Date();
+        const target = new Date(ddayTarget.date);
+
+        // 시간 차이 때문에 하루 밀리는 거 방지용: 둘 다 0시 기준으로 맞춤
+        today.setHours(0, 0, 0, 0);
+        target.setHours(0, 0, 0, 0);
+
+        const diffTime = target - today;
+        const diffDay = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+        let text = "";
+
+        if (diffDay > 0) {
+          text = `${ddayTarget.title} D-${diffDay}`;
+        } else if (diffDay === 0) {
+          text = `${ddayTarget.title} D-DAY`;
+        } else {
+          text = `${ddayTarget.title} D+${Math.abs(diffDay)}`;
+        }
+
+        box.innerText = text;
+      }
+      let memoData = JSON.parse(localStorage.getItem("taskMemo") || "[]");
+
+      function renderMemo() {
+        const list = document.getElementById("memo-list");
+        list.innerHTML = "";
+
+        memoData.forEach((memo, idx) => {
+          list.innerHTML += `
+      <li class="memo-item">
+        <div class="memo-left">
+          <input type="checkbox" ${memo.done ? "checked" : ""} onchange="toggleMemo(${idx})">
+          <span class="memo-text ${memo.done ? "done" : ""}">${memo.text}</span>
+        </div>
+        <button class="memo-delete" onclick="deleteMemo(${idx})">✕</button>
+      </li>
+    `;
+        });
+      }
+
+      function addMemo() {
+        const input = document.getElementById("memo-input");
+        const text = input.value.trim();
+        if (!text) return;
+
+        memoData.push({ text, done: false });
+        localStorage.setItem("taskMemo", JSON.stringify(memoData));
+        input.value = "";
+        renderMemo();
+      }
+
+      function toggleMemo(idx) {
+        memoData[idx].done = !memoData[idx].done;
+        localStorage.setItem("taskMemo", JSON.stringify(memoData));
+        renderMemo();
+      }
+
+      function deleteMemo(idx) {
+        memoData.splice(idx, 1);
+        localStorage.setItem("taskMemo", JSON.stringify(memoData));
+        renderMemo();
+      }
       window.onload = () => {
         initClock();
         initCalendar();
@@ -794,6 +957,9 @@
         loadMeal("2");
 
         renderOnochu();
+        updateDday();
+
+        renderMemo();
       };
     </script>
   </body>
